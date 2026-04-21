@@ -7,6 +7,15 @@ datasource db {
   provider = "sqlite"
 }
 
+enum ScriptType {
+  REGULAR
+  RUNNING
+  CURSIVE
+  CLERICAL
+  SEAL
+  OTHER
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String?  @unique
@@ -17,12 +26,15 @@ model User {
 }
 
 model Work {
-  id        String   @id @default(cuid())
-  title     String?
-  imageUrl  String
-  imagePath String?
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String     @id @default(cuid())
+  title       String     @default("未命名作品")
+  description String?
+  scriptType  ScriptType @default(OTHER)
+  isPublic    Boolean    @default(true)
+  imageUrl    String
+  imagePath   String?
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }

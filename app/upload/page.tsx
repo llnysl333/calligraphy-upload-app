@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 type UploadResponse = {
   imageUrl?: string;
@@ -16,6 +17,9 @@ type UploadStatus =
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [scriptType, setScriptType] = useState("REGULAR");
+  const [isPublic, setIsPublic] = useState(true);
   const [status, setStatus] = useState<UploadStatus>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -23,6 +27,11 @@ export default function UploadPage() {
     event.preventDefault();
     const form = event.currentTarget;
     setStatus(null);
+
+    if (!title.trim()) {
+      setStatus({ type: "error", message: "请填写作品标题" });
+      return;
+    }
 
     if (!file) {
       setStatus({ type: "error", message: "请选择一张图片" });
@@ -32,6 +41,9 @@ export default function UploadPage() {
     const formData = new FormData();
     formData.append("image", file);
     formData.append("title", title);
+    formData.append("description", description);
+    formData.append("scriptType", scriptType);
+    formData.append("isPublic", String(isPublic));
 
     setIsUploading(true);
 
@@ -54,6 +66,9 @@ export default function UploadPage() {
 
       setStatus({ type: "success", imageUrl: data.imageUrl });
       setTitle("");
+      setDescription("");
+      setScriptType("REGULAR");
+      setIsPublic(true);
       setFile(null);
       form.reset();
     } catch {
@@ -66,11 +81,19 @@ export default function UploadPage() {
   return (
     <main className="min-h-screen bg-stone-50 px-6 py-10 text-zinc-950">
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
-        <header className="border-b border-zinc-200 pb-6">
-          <p className="text-sm text-zinc-500">Calligraphy Works</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            上传书法图片
-          </h1>
+        <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm text-zinc-500">Calligraphy Works</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-normal">
+              上传书法图片
+            </h1>
+          </div>
+          <Link
+            className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-300 px-4 text-sm font-medium transition hover:bg-zinc-100"
+            href="/works"
+          >
+            返回作品列表
+          </Link>
         </header>
 
         <form
@@ -78,14 +101,51 @@ export default function UploadPage() {
           className="flex flex-col gap-5 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm"
         >
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-zinc-700">作品标题</span>
+            <span className="text-sm font-medium text-zinc-700">作品标题 *</span>
             <input
+              required
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               className="h-11 rounded-md border border-zinc-300 px-3 text-base outline-none transition focus:border-zinc-900"
-              placeholder="可选"
+              placeholder="请输入作品标题"
               type="text"
             />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-zinc-700">作品描述</span>
+            <textarea
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              className="min-h-28 rounded-md border border-zinc-300 px-3 py-2 text-base outline-none transition focus:border-zinc-900"
+              placeholder="可选"
+            />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-zinc-700">书体类型</span>
+            <select
+              value={scriptType}
+              onChange={(event) => setScriptType(event.target.value)}
+              className="h-11 rounded-md border border-zinc-300 bg-white px-3 text-base outline-none transition focus:border-zinc-900"
+            >
+              <option value="REGULAR">楷书</option>
+              <option value="RUNNING">行书</option>
+              <option value="CURSIVE">草书</option>
+              <option value="CLERICAL">隶书</option>
+              <option value="SEAL">篆书</option>
+              <option value="OTHER">其他</option>
+            </select>
+          </label>
+
+          <label className="flex items-center gap-3 text-sm font-medium text-zinc-700">
+            <input
+              checked={isPublic}
+              className="h-4 w-4 accent-zinc-950"
+              type="checkbox"
+              onChange={(event) => setIsPublic(event.target.checked)}
+            />
+            公开展示
           </label>
 
           <label className="flex flex-col gap-2">
